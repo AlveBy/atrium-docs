@@ -137,11 +137,43 @@ final class Docs
         )->toArray()));
     }
 
+    /**
+     * The title of a page: its first "# Heading", read from the file. The
+     * sidebar needs the title of every page on every page, and rendering
+     * them all (highlighting included) made the first visit after a change
+     * of the repository take twenty seconds.
+     */
     public function title(Version $version, Page $page, string $language): string
     {
-        $title = $this->render($version, $page, $language)->title;
+        $title = self::heading((string) file_get_contents($version->file($page->file($language))))
+            ?? $this->render($version, $page, $language)->title;
 
         return $title !== '' ? $title : $page->slug;
+    }
+
+    /**
+     * The first "# Heading" of Markdown as plain text, outside code blocks;
+     * null when there is none.
+     */
+    public static function heading(string $markdown): ?string
+    {
+        $fenced = false;
+
+        foreach (preg_split('/\R/', $markdown) ?: [] as $line) {
+            if (preg_match('/^ {0,3}(```|~~~)/', $line)) {
+                $fenced = ! $fenced;
+
+                continue;
+            }
+
+            if (! $fenced && preg_match('/^ {0,3}#[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/', $line, $match)) {
+                $text = (string) preg_replace(['/!?\[([^\]]*)\]\([^)]*\)/', '/\*\*|__|\*|`/'], ['$1', ''], $match[1]);
+
+                return trim(html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5));
+            }
+        }
+
+        return null;
     }
 
     /**
