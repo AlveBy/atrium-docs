@@ -1,3 +1,7 @@
+{{--
+    This file is part of Atrium (https://github.com/AlveBy/atrium).
+    Copyright (c) 2026 AlveBy. Licensed under the MIT License, see LICENSE.
+--}}
 <aside class="docs-sidebar" aria-label="{{ __('atrium-docs::docs.contents') }}">
     <form class="docs-search" role="search" action="{{ $searchUrl }}" method="get" data-docs-search>
         <label for="docs-q">{{ __('atrium-docs::docs.search') }}</label>

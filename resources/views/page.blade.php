@@ -1,4 +1,8 @@
 {{--
+    This file is part of Atrium (https://github.com/AlveBy/atrium).
+    Copyright (c) 2026 AlveBy. Licensed under the MIT License, see LICENSE.
+--}}
+{{--
     A page of the documentation. Publish the views (vendor:publish
     --tag=atrium-docs-views) to change it; the frame comes from the layout
     in atrium-docs.layout.

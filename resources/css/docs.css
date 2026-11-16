@@ -1,4 +1,9 @@
 /*
+ * This file is part of Atrium (https://github.com/AlveBy/atrium).
+ * Copyright (c) 2026 AlveBy. Licensed under the MIT License, see LICENSE.
+ */
+
+/*
  * Atrium docs. Colours come from the site's custom properties (the theme's
  * --text, --muted, --accent, --line, --surface, --focus), with fallbacks of
  * their own, so the docs follow any theme. Links are underlined: they never
