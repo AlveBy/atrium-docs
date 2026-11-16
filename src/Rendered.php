@@ -25,4 +25,29 @@ final readonly class Rendered
         public array $headings,
         public array $sections,
     ) {}
+
+    /**
+     * Plain arrays for the cache: Laravel unserializes no objects from the
+     * cache unless the app lists their classes (cache.serializable_classes).
+     *
+     * @return array{title:string,html:string,description:string,headings:array<int,array{level:int,id:string,text:string}>,sections:array<int,array{id:string,heading:string,text:string}>}
+     */
+    public function toArray(): array
+    {
+        return [
+            'title' => $this->title,
+            'html' => $this->html,
+            'description' => $this->description,
+            'headings' => $this->headings,
+            'sections' => $this->sections,
+        ];
+    }
+
+    /**
+     * @param  array{title:string,html:string,description:string,headings:array<int,array{level:int,id:string,text:string}>,sections:array<int,array{id:string,heading:string,text:string}>}  $data
+     */
+    public static function fromArray(array $data): self
+    {
+        return new self($data['title'], $data['html'], $data['description'], $data['headings'], $data['sections']);
+    }
 }

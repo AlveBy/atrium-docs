@@ -130,11 +130,11 @@ final class Docs
         $file = $page->file($language);
         $key = 'atrium-docs:'.md5($version->name.'|'.$version->fingerprint().'|'.$file.'|'.self::code($language).'|'.$this->urlRoot());
 
-        /** @var Rendered */
-        return $this->cache->rememberForever($key, fn (): Rendered => $this->renderer()->render(
+        // Kept as an array: the cache gives back no objects (see Rendered::toArray).
+        return Rendered::fromArray($this->cache->rememberForever($key, fn (): array => $this->renderer()->render(
             (string) file_get_contents($version->file($file)),
             fn (string $url, bool $image): string => $this->resolve($version, $file, $url, $image, $language),
-        ));
+        )->toArray()));
     }
 
     public function title(Version $version, Page $page, string $language): string
