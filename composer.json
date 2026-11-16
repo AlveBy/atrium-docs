@@ -1,0 +1,54 @@
+{
+    "name": "alveby/atrium-docs",
+    "description": "Documentation pages for Atrium: renders the Markdown of a repository's docs and package READMEs with a sidebar, search, anchors, code highlighting, versions per release and language fallback",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/AlveBy/atrium",
+    "support": {
+        "issues": "https://github.com/AlveBy/atrium/issues",
+        "source": "https://github.com/AlveBy/atrium"
+    },
+    "keywords": [
+        "laravel",
+        "atrium",
+        "documentation",
+        "markdown",
+        "i18n"
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^13.0",
+        "alveby/atrium": "^0.1",
+        "league/commonmark": "^2.7",
+        "phiki/phiki": "^2.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^11.0",
+        "phpunit/phpunit": "^12.5"
+    },
+    "suggest": {
+        "alveby/atrium-theme": "Draws the documentation inside the site's layout"
+    },
+    "autoload": {
+        "psr-4": {
+            "Atrium\\Docs\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Atrium\\Docs\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Atrium\\Docs\\DocsServiceProvider"
+            ]
+        },
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
