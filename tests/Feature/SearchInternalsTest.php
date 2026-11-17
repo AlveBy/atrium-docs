@@ -11,6 +11,7 @@ namespace Atrium\Docs\Tests\Feature;
 
 use Atrium\Docs\Docs;
 use Atrium\Docs\Tests\TestCase;
+use Illuminate\Support\Facades\Cache;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionMethod;
 
@@ -38,7 +39,7 @@ final class SearchInternalsTest extends TestCase
             'docs/b3.md' => $page('Page b3', 'Z3', 'qq qq qq qq qq rr rr rr rr rr ss'),
             'docs/b4.md' => $page('Page b4', 'Z4 qq', 'rr ss'),
             'docs/b5.md' => $page('Page b5', 'Z5 qq rr ss', 'qq rr ss'),
-            'docs/d1.md' => $page('Заголовок', 'Раздел', 'ПРИВЕТ мир'),
+            'docs/d1.md' => $page('Заголовок', 'Раздел', 'ПРИВЕТ мир я'),
             'docs/d2.md' => $page('Страница', 'Привет', 'текст'),
             'docs/e1.md' => $page('Pre', 'fix', 'plain'),
             'docs/e2.md' => $page('Zebra', 'Stripes', 'plain'),
@@ -99,8 +100,25 @@ final class SearchInternalsTest extends TestCase
 
         $version = $this->docs->version('main');
         $this->assertNotNull($version);
-        $snippet = $this->docs->search($version, 'en', 'zz zz')[0]['snippet'];
-        $this->assertStringNotContainsString('<mark><mark>', $snippet);
+        $results = $this->docs->search($version, 'en', 'zz zz');
+        $six = array_values(array_filter($results, fn (array $result): bool => $result['heading'] === 'Six'))[0];
+
+        $this->assertSame(str_repeat('<mark>zz</mark> ', 5).'<mark>zz</mark>', $six['snippet']);
+    }
+
+    public function test_a_word_of_one_letter_is_too_short_in_any_alphabet(): void
+    {
+        $this->assertSame([], $this->headings('я'));
+        $this->assertSame(['Раздел'], $this->headings('мир'));
+    }
+
+    public function test_the_index_is_kept_under_the_name_of_the_docs(): void
+    {
+        $version = $this->docs->version('main');
+        $this->assertNotNull($version);
+        $this->docs->search($version, 'en', 'zz');
+
+        $this->assertTrue(Cache::has('atrium-docs:index:'.md5(implode('|', [$version->fingerprint(), 'en']))));
     }
 
     public function test_capitals_of_any_alphabet_are_found(): void
