@@ -54,6 +54,16 @@ final class PullTest extends TestCase
         $this->assertSame([], glob($this->storage.'/.clone-*') ?: []);
     }
 
+    public function test_the_storage_is_made_before_git_is_asked(): void
+    {
+        $this->assertDirectoryDoesNotExist($this->storage);
+
+        $this->artisan('atrium:docs:pull', ['ref' => 'main', '--source' => $this->repository.'/none'])->assertFailed();
+
+        $this->assertDirectoryExists($this->storage);
+        $this->assertSame([], glob($this->storage.'/.clone-*') ?: []);
+    }
+
     public function test_links_and_folders_named_like_markdown_are_not_copied(): void
     {
         file_put_contents($this->repository.'/README.md', '# Readme');
