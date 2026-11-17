@@ -462,7 +462,8 @@ final class Docs
 
         $guides = $this->group($version, 'docs/*.md', fn (string $name): string => strtolower($name), Page::GUIDE);
         $order = array_flip(array_map('strval', (array) config('atrium-docs.order', [])));
-        uksort($guides, fn (string $a, string $b): int => [$order[$a] ?? PHP_INT_MAX, $a] <=> [$order[$b] ?? PHP_INT_MAX, $b]);
+        $rank = static fn (string $slug): array => [$order[$slug] ?? PHP_INT_MAX, $slug];
+        uksort($guides, fn (string $a, string $b): int => $rank($a) <=> $rank($b));
 
         $pages += $guides;
 

@@ -28,16 +28,20 @@ final class DocsInternalsTest extends TestCase
     public function test_the_guides_of_the_config_come_first_in_its_order_and_the_rest_by_name(): void
     {
         config(['atrium-docs.order' => ['zeta', 'alpha']]);
-        $docs = $this->docsOf([
-            'docs/alpha.md' => '# A',
-            'docs/beta.md' => '# B',
-            'docs/zeta.md' => '# Z',
-            'docs/omega.md' => '# O',
-        ]);
+        $files = [];
+
+        foreach (['alpha', 'beta', 'zeta', 'omega', 'delta', 'gamma', 'kappa', 'sigma', 'theta', 'lambda', 'epsilon', 'iota'] as $name) {
+            $files['docs/'.$name.'.md'] = '# '.$name;
+        }
+
+        $docs = $this->docsOf($files);
         $version = $docs->version('main');
         $this->assertNotNull($version);
 
-        $this->assertSame(['zeta', 'alpha', 'beta', 'omega'], array_keys($docs->pages($version)));
+        $this->assertSame(
+            ['zeta', 'alpha', 'beta', 'delta', 'epsilon', 'gamma', 'iota', 'kappa', 'lambda', 'omega', 'sigma', 'theta'],
+            array_keys($docs->pages($version)),
+        );
     }
 
     public function test_a_snippet_finds_a_capital_word_deep_in_the_text_and_counts_letters_for_its_end(): void

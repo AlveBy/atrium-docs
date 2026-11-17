@@ -15,6 +15,8 @@ use Atrium\Docs\Docs;
 use Atrium\Docs\Http\Controllers\DocsController;
 use Atrium\Docs\Tests\TestCase;
 use Atrium\Theme\ThemeServiceProvider;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionMethod;
 
@@ -92,6 +94,16 @@ final class ControllerInternalsTest extends TestCase
     public function test_the_query_of_a_search_is_trimmed_and_cut_to_a_hundred_letters(string $encoded, string $query): void
     {
         $this->getJson('/docs/main/search?q='.$encoded)->assertOk()->assertJsonPath('query', $query);
+    }
+
+    public function test_the_controller_trims_the_query_itself_when_no_middleware_does(): void
+    {
+        $request = Request::create('/docs/main/search', 'GET', ['q' => "  \t".str_repeat('a', 100)], server: ['HTTP_ACCEPT' => 'application/json']);
+
+        $response = $this->app->make(DocsController::class)->search($request, 'main');
+
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertSame(str_repeat('a', 100), $response->getData(true)['query']);
     }
 
     public function test_a_search_without_a_query_has_no_results(): void

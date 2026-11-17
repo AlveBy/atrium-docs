@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Atrium\Docs\Tests\Feature;
 
+use Atrium\Docs\Docs;
 use Atrium\Docs\DocsServiceProvider;
 use Atrium\Docs\Tests\TestCase;
 use Atrium\Theme\ThemeServiceProvider;
@@ -44,6 +45,11 @@ final class ProviderInternalsTest extends TestCase
         $this->assertSame('docs', config('atrium-docs.prefix'));
         $this->assertTrue(config('atrium-docs.routes'));
         $this->assertIsString(config('atrium-docs.source'));
+    }
+
+    public function test_the_service_is_one_for_the_whole_app(): void
+    {
+        $this->assertSame($this->app->make(Docs::class), $this->app->make(Docs::class));
     }
 
     public function test_the_views_are_offered_to_the_app(): void
