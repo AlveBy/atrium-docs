@@ -12,6 +12,7 @@ namespace Atrium\Docs;
 use Atrium\Docs\Console\PullCommand;
 use Atrium\Docs\Http\Controllers\DocsController;
 use Atrium\Theme\ThemeServiceProvider;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -67,9 +68,7 @@ final class DocsServiceProvider extends ServiceProvider
      */
     public static function styles(): string
     {
-        static $styles = null;
-
-        return $styles ??= (string) file_get_contents(__DIR__.'/../resources/css/docs.css');
+        return once(static fn (): string => File::get(__DIR__.'/../resources/css/docs.css'));
     }
 
     private function registerRoutes(): void

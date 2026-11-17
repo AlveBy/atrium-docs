@@ -54,8 +54,9 @@ final class Renderer
     {
         $title = '';
 
+        // Raw HTML stays and the ids of equal headings are numbered per page:
+        // both are CommonMark's own defaults.
         $environment = new Environment([
-            'html_input' => 'allow',
             'allow_unsafe_links' => false,
             'heading_permalink' => [
                 'apply_id_to_heading' => true,
@@ -69,7 +70,6 @@ final class Renderer
                 'aria_hidden' => true,
                 'title' => '',
             ],
-            'slug_normalizer' => ['unique' => 'document'],
         ]);
 
         $environment->addExtension(new CommonMarkCoreExtension);
@@ -91,7 +91,7 @@ final class Renderer
 
         $html = (string) (new MarkdownConverter($environment))->convert($markdown);
         // Wide tables scroll on their own instead of widening the page.
-        $html = (string) preg_replace(['#<table>#', '#</table>#'], ['<div class="docs-table" tabindex="0"><table>', '</table></div>'], $html);
+        $html = preg_replace(['#<table>#', '#</table>#'], ['<div class="docs-table" tabindex="0"><table>', '</table></div>'], $html) ?? '';
 
         [$headings, $sections] = $this->outline($html);
 
@@ -192,20 +192,22 @@ final class Renderer
      */
     private function outline(string $html): array
     {
-        $parts = preg_split('#(<h([2-4]) id="([^"]+)"[^>]*>.*?</h\2>)#s', $html, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$html];
+        $parts = preg_split('#(<h([2-4]) id="([^"]+)"[^>]*>.*?</h\2>)#s', $html, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [];
         $headings = [];
-        $sections = [['id' => '', 'heading' => '', 'text' => self::plain($parts[0])]];
+        $sections = [['id' => '', 'heading' => '', 'text' => self::plain($parts[0] ?? '')]];
 
-        for ($i = 1; $i + 3 <= count($parts); $i += 4) {
-            $text = self::plain($parts[$i]);
-            $level = (int) $parts[$i + 1];
-            $id = html_entity_decode($parts[$i + 2], ENT_QUOTES | ENT_HTML5);
+        // What is left after the text before the first heading: each heading
+        // with its level, its id and the text up to the next one.
+        foreach (array_chunk(array_slice($parts, 1), 4) as [$heading, $level, $id, $after]) {
+            $text = self::plain($heading);
+            $level = (int) $level;
+            $id = html_entity_decode($id, ENT_QUOTES | ENT_HTML5);
 
             if ($level <= 3) {
                 $headings[] = ['level' => $level, 'id' => $id, 'text' => $text];
             }
 
-            $sections[] = ['id' => $id, 'heading' => $text, 'text' => self::plain($parts[$i + 3] ?? '')];
+            $sections[] = ['id' => $id, 'heading' => $text, 'text' => self::plain($after)];
         }
 
         return [$headings, array_values(array_filter($sections, fn (array $section): bool => $section['heading'] !== '' || $section['text'] !== ''))];
@@ -213,20 +215,20 @@ final class Renderer
 
     private function description(string $html): string
     {
-        if (! preg_match('#<p>(.*?)</p>#s', $html, $match)) {
+        if (! preg_match('#<p>.*?</p>#s', $html, $match)) {
             return '';
         }
 
-        $text = self::plain($match[1]);
+        $text = self::plain($match[0]);
 
         return mb_strlen($text) > 160 ? rtrim(mb_substr($text, 0, 157)).'…' : $text;
     }
 
     public static function plain(string $html): string
     {
-        $html = (string) preg_replace('#<a [^>]*class="docs-anchor"[^>]*>.*?</a>#s', '', $html);
-        $html = (string) preg_replace('#<(br|/p|/li|/h\d|/tr|/pre|/div)[^>]*>#', ' ', $html);
+        $html = preg_replace('#<a [^>]*class="docs-anchor"[^>]*>.*?</a>#s', '', $html) ?? '';
+        $html = preg_replace('#<(br|/p|/li|/h\d|/tr|/pre|/div)[^>]*>#', ' ', $html) ?? '';
 
-        return trim((string) preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5)));
+        return trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5)) ?? '');
     }
 }

@@ -517,7 +517,7 @@ final class Docs
 
     private function renderer(): Renderer
     {
-        $theme = (array) config('atrium-docs.highlight', []);
+        $theme = config('atrium-docs.highlight', []);
         $light = (string) ($theme['light'] ?? 'atrium-light');
         $dark = $theme['dark'] ?? null;
 

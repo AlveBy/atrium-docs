@@ -48,7 +48,7 @@ final class DocsController extends Controller
         // version without the version in the address.
         if ($found === null) {
             $default = $this->docs->defaultVersion();
-            $slug = trim($version.'/'.$page, '/');
+            $slug = $version.'/'.$page;
 
             abort_unless($default !== null && $this->docs->page($default, $slug) !== null, 404);
 
@@ -141,7 +141,7 @@ final class DocsController extends Controller
         return [
             'version' => $version,
             'versions' => $versions,
-            'isDefaultVersion' => $this->docs->defaultVersion()?->name === $version->name,
+            'isDefaultVersion' => $this->docs->defaultVersion() === $version,
             'sidebar' => $this->docs->sidebar($version, $language),
             'searchUrl' => $this->docs->searchUrl($version),
             'switch' => $switch,
@@ -155,8 +155,8 @@ final class DocsController extends Controller
      */
     private function canonical(Version $version, Page $page, bool $translated): string
     {
-        $default = $this->docs->defaultVersion();
-        $target = $default !== null && $this->docs->page($default, $page->slug) !== null ? $default : $version;
+        $default = $this->docs->defaultVersion() ?? $version;
+        $target = $this->docs->page($default, $page->slug) !== null ? $default : $version;
         $language = $translated || ! $this->languages->has(Docs::SOURCE) ? app()->getLocale() : Docs::SOURCE;
 
         return $this->docs->url($target, $page->slug, $language);
