@@ -35,7 +35,7 @@ final class PullCommand extends Command
 
     public function handle(Filesystem $files): int
     {
-        $ref = (string) $this->argument('ref');
+        $ref = $this->argument('ref');
 
         if (! Docs::validName($ref)) {
             $this->error("\"{$ref}\" is not a tag or a branch name.");
@@ -43,7 +43,7 @@ final class PullCommand extends Command
             return self::FAILURE;
         }
 
-        $source = (string) ($this->option('source') ?: config('atrium-docs.source'));
+        $source = $this->option('source') ?: config('atrium-docs.source');
         $storage = rtrim((string) config('atrium-docs.storage'), '/');
         $clone = $storage.'/.clone-'.bin2hex(random_bytes(4));
         $target = $storage.'/'.$ref;
@@ -96,9 +96,9 @@ final class PullCommand extends Command
                 continue;
             }
 
-            $relative = substr($file, strlen($from) + 1);
-            $files->ensureDirectoryExists(dirname($to.'/'.$relative));
-            $files->copy($file, $to.'/'.$relative);
+            $relative = substr($file, strlen($from));
+            $files->ensureDirectoryExists(dirname($to.$relative));
+            $files->copy($file, $to.$relative);
             $copied++;
         }
 

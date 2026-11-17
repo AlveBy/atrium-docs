@@ -65,7 +65,7 @@ final class Docs
 
         foreach ((array) config('atrium-docs.versions', []) as $name => $path) {
             if (is_string($path) && is_dir($path) && self::validName((string) $name)) {
-                $found[(string) $name] = new Version((string) $name, rtrim($path, '/'));
+                $found[$name] = new Version((string) $name, rtrim($path, '/'));
             }
         }
 
@@ -82,7 +82,7 @@ final class Docs
         $releases = array_filter($found, fn (Version $version): bool => $version->isRelease());
         uasort($releases, fn (Version $a, Version $b): int => version_compare(ltrim($b->name, 'v'), ltrim($a->name, 'v')));
 
-        return $this->versions = [...$releases, ...array_diff_key($found, $releases)];
+        return $this->versions = [...$releases, ...$found];
     }
 
     public function version(string $name): ?Version
@@ -128,7 +128,7 @@ final class Docs
     public function render(Version $version, Page $page, string $language): Rendered
     {
         $file = $page->file($language);
-        $key = 'atrium-docs:'.md5($version->name.'|'.$version->fingerprint().'|'.$file.'|'.self::code($language).'|'.$this->urlRoot());
+        $key = 'atrium-docs:'.md5(implode('|', [$version->fingerprint(), $file, self::code($language), $this->urlRoot()]));
 
         // Kept as an array: the cache gives back no objects (see Rendered::toArray).
         return Rendered::fromArray($this->cache->rememberForever($key, fn (): array => $this->renderer()->render(
@@ -167,7 +167,7 @@ final class Docs
             }
 
             if (! $fenced && preg_match('/^ {0,3}#[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/', $line, $match)) {
-                $text = (string) preg_replace(['/!?\[([^\]]*)\]\([^)]*\)/', '/\*\*|__|\*|`/'], ['$1', ''], $match[1]);
+                $text = preg_replace(['/!?\[([^\]]*)\]\([^)]*\)/', '/\*\*|__|\*|`/'], ['$1', ''], $match[1]) ?? $match[1];
 
                 return trim(html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5));
             }
@@ -251,7 +251,7 @@ final class Docs
      */
     public function search(Version $version, string $language, string $query, int $limit = 20): array
     {
-        $terms = array_values(array_unique(array_filter(preg_split('/\s+/u', mb_strtolower(trim($query))) ?: [], fn (string $term): bool => mb_strlen($term) >= 2)));
+        $terms = array_unique(array_filter(preg_split('/\s+/u', mb_strtolower($query)) ?: [], fn (string $term): bool => mb_strlen($term) >= 2));
 
         if ($terms === []) {
             return [];
@@ -262,7 +262,7 @@ final class Docs
         foreach ($this->index($version, $language) as $entry) {
             $heading = mb_strtolower($entry['title'].' '.$entry['heading']);
             $text = mb_strtolower($entry['text']);
-            $score = 0;
+            $scores = [];
 
             foreach ($terms as $term) {
                 $inHeading = substr_count($heading, $term);
@@ -272,11 +272,11 @@ final class Docs
                     continue 2;
                 }
 
-                $score += 10 * $inHeading + min($inText, 5);
+                $scores[] = 10 * $inHeading + min($inText, 5);
             }
 
             $results[] = [
-                'score' => $score,
+                'score' => array_sum($scores),
                 'page' => $entry['slug'],
                 'title' => $entry['title'],
                 'heading' => $entry['heading'],
@@ -301,7 +301,7 @@ final class Docs
      */
     private function index(Version $version, string $language): array
     {
-        $key = 'atrium-docs:index:'.md5($version->name.'|'.$version->fingerprint().'|'.self::code($language));
+        $key = 'atrium-docs:index:'.md5(implode('|', [$version->fingerprint(), self::code($language)]));
 
         return $this->cache->rememberForever($key, function () use ($version, $language): array {
             $entries = [];
@@ -326,23 +326,23 @@ final class Docs
     private static function snippet(string $text, array $terms): string
     {
         $lower = mb_strtolower($text);
-        $position = null;
+        $positions = [];
 
         foreach ($terms as $term) {
             $found = mb_strpos($lower, $term);
 
-            if ($found !== false && ($position === null || $found < $position)) {
-                $position = $found;
+            if ($found !== false) {
+                $positions[] = $found;
             }
         }
 
-        $start = max(0, ($position ?? 0) - 60);
+        $start = max(0, min($positions ?: [0]) - 60);
         $snippet = mb_substr($text, $start, 200);
         $snippet = ($start > 0 ? '…' : '').$snippet.(mb_strlen($text) > $start + 200 ? '…' : '');
         $escaped = e($snippet);
 
         foreach ($terms as $term) {
-            $escaped = (string) preg_replace('/('.preg_quote(e($term), '/').')/iu', '<mark>$1</mark>', $escaped);
+            $escaped = preg_replace('/('.preg_quote(e($term), '/').')/iu', '<mark>$1</mark>', $escaped) ?? $escaped;
         }
 
         return $escaped;
@@ -389,7 +389,7 @@ final class Docs
             }
         }
 
-        $ref = $version->isRelease() ? $version->name : (string) config('atrium-docs.branch', 'main');
+        $ref = $version->isRelease() ? $version->name : config('atrium-docs.branch', 'main');
 
         return rtrim((string) config('atrium-docs.repository'), '/').'/blob/'.$ref.'/'.$path.$anchor;
     }
@@ -452,7 +452,7 @@ final class Docs
             $files = [self::SOURCE => 'README.md'];
 
             foreach (glob($version->file('docs/readme/README.*.md')) ?: [] as $file) {
-                if (preg_match(self::FILE, basename($file), $match) && ($match['lang'] ?? '') !== '') {
+                if (preg_match(self::FILE, basename($file), $match)) {
                     $files[self::code($match['lang'])] ??= 'docs/readme/'.basename($file);
                 }
             }
