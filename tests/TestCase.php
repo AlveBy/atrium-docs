@@ -26,6 +26,9 @@ abstract class TestCase extends Orchestra
 
     protected string $storage;
 
+    /** @var array<int,string> */
+    private array $repositories = [];
+
     protected function getPackageProviders($app): array
     {
         return [
@@ -59,7 +62,43 @@ abstract class TestCase extends Orchestra
     {
         (new Filesystem)->deleteDirectory($this->storage);
 
+        foreach ($this->repositories as $repository) {
+            (new Filesystem)->deleteDirectory($repository);
+        }
+
         parent::tearDown();
+    }
+
+    /**
+     * A repository of its own in a temporary folder: the files by their
+     * paths. It is not in storage, so it is no version until configured.
+     *
+     * @param  array<string,string>  $files
+     */
+    protected function repository(array $files): string
+    {
+        $root = sys_get_temp_dir().'/atrium-docs-repo-'.getmypid().'-'.bin2hex(random_bytes(3));
+        $this->repositories[] = $root;
+
+        foreach ($files as $path => $contents) {
+            (new Filesystem)->ensureDirectoryExists(dirname($root.'/'.$path));
+            file_put_contents($root.'/'.$path, $contents);
+        }
+
+        return $root;
+    }
+
+    /**
+     * The only version, `main`, is this repository.
+     *
+     * @param  array<string,string>  $files
+     */
+    protected function docsOf(array $files): Docs
+    {
+        config(['atrium-docs.versions' => ['main' => $this->repository($files)]]);
+        $this->app->forgetInstance(Docs::class);
+
+        return $this->app->make(Docs::class);
     }
 
     public static function fixture(): string
