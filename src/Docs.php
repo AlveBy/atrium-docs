@@ -167,7 +167,7 @@ final class Docs
             }
 
             if (! $fenced && preg_match('/^ {0,3}#[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/', $line, $match)) {
-                $text = preg_replace(['/!?\[([^\]]*)\]\([^)]*\)/', '/\*\*|__|\*|`/'], ['$1', ''], $match[1]) ?? $match[1];
+                $text = preg_replace(['/!?\[([^\]]*)\]\([^)]*\)/', '/\*\*|__|\*|`/'], ['$1', ''], $match[1]) ?? '';
 
                 return trim(html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5));
             }
@@ -336,7 +336,7 @@ final class Docs
             }
         }
 
-        $start = max(0, min($positions ?: [0]) - 60);
+        $start = $positions === [] ? 0 : max(0, min($positions) - 60);
         $snippet = mb_substr($text, $start, 200);
         $snippet = ($start > 0 ? '…' : '').$snippet.(mb_strlen($text) > $start + 200 ? '…' : '');
         $escaped = e($snippet);
