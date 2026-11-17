@@ -48,12 +48,4 @@ final readonly class Page
     {
         return $this->files[Docs::code($language)] ?? $this->original();
     }
-
-    /**
-     * @return array<int,string>
-     */
-    public function languages(): array
-    {
-        return array_keys($this->files);
-    }
 }

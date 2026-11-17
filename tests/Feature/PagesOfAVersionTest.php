@@ -38,15 +38,6 @@ final class PagesOfAVersionTest extends TestCase
         $this->assertNotContains('folder', $slugs);
     }
 
-    public function test_a_page_lists_the_languages_it_is_written_in(): void
-    {
-        $guide = $this->docs()->page($this->version(), 'guide');
-
-        $this->assertNotNull($guide);
-        $this->assertSame(['en', 'ru'], $guide->languages());
-        $this->assertSame(['en'], (new Page('about', Page::GUIDE, ['en' => 'docs/about.md']))->languages());
-    }
-
     /**
      * @return array<string,array{0:string,1:string}>
      */
