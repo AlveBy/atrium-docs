@@ -179,10 +179,10 @@ final class LinksInternalsTest extends TestCase
     {
         $this->assertSame('http://localhost/docs/main/guide', $this->docs->url($this->version, '/guide/', 'en'));
         $this->assertSame('http://localhost/ru/docs/main/guide', $this->docs->url($this->version, 'guide', 'ru'));
-        $this->assertSame('http://localhost/docs/main/search', $this->docs->searchUrl($this->version, 'en'));
-        $this->assertSame('http://localhost/ru/docs/main/search', $this->docs->searchUrl($this->version, 'ru'));
+        $this->assertSame('http://localhost/docs/main/_search', $this->docs->searchUrl($this->version, 'en'));
+        $this->assertSame('http://localhost/ru/docs/main/_search', $this->docs->searchUrl($this->version, 'ru'));
         $this->assertSame('http://localhost/docs/main/guide', $this->docs->url($this->version, 'guide'));
-        $this->assertSame('http://localhost/docs/main/search', $this->docs->searchUrl($this->version));
+        $this->assertSame('http://localhost/docs/main/_search', $this->docs->searchUrl($this->version));
     }
 
     public function test_a_language_that_is_a_variant_of_a_site_language_is_the_site_language(): void

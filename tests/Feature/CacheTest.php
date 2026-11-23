@@ -35,7 +35,7 @@ final class CacheTest extends TestCase
         $this->app->forgetInstance(Docs::class);
 
         $this->get('/docs/main/guide')->assertOk()->assertSee('<h1>The guide</h1>', false)->assertSee('id="field-options"', false);
-        $this->getJson('/docs/main/search?q=usage')->assertOk()->assertJsonPath('results.0.page', 'modules/shop');
-        $this->getJson('/docs/main/search?q=usage')->assertOk()->assertJsonPath('results.0.page', 'modules/shop');
+        $this->getJson('/docs/main/_search?q=usage')->assertOk()->assertJsonPath('results.0.page', 'modules/shop');
+        $this->getJson('/docs/main/_search?q=usage')->assertOk()->assertJsonPath('results.0.page', 'modules/shop');
     }
 }

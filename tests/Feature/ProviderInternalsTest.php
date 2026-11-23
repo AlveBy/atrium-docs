@@ -120,7 +120,7 @@ final class ProviderInternalsTest extends TestCase
         $route = Route::getRoutes()->getByName('atrium.docs.search');
 
         $this->assertNotNull($route);
-        $this->assertSame('docs/{version}/search', $route->uri());
+        $this->assertSame('docs/{version}/_search', $route->uri());
         $this->assertSame(['version' => self::VERSION], $route->wheres);
         $this->assertContains('web', $route->gatherMiddleware());
     }

@@ -89,7 +89,7 @@ final class DocsServiceProvider extends ServiceProvider
             Route::localized(function () use ($prefix, $version): void {
                 Route::get($prefix, [DocsController::class, 'index'])->name('atrium.docs.index');
 
-                Route::get($prefix.'/{version}/search', [DocsController::class, 'search'])
+                Route::get($prefix.'/{version}/_search', [DocsController::class, 'search'])
                     ->where('version', $version)
                     ->name('atrium.docs.search');
 

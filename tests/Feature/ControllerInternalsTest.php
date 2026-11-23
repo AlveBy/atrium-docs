@@ -58,7 +58,7 @@ final class ControllerInternalsTest extends TestCase
     public function test_what_does_not_exist_is_not_found(): void
     {
         $this->get('/docs/nope/guide')->assertStatus(404);
-        $this->get('/docs/nope/search')->assertStatus(404);
+        $this->get('/docs/nope/_search')->assertStatus(404);
         $this->get('/docs/nope/_assets/docs/images/admin.png')->assertStatus(404);
         $this->get('/docs/main/nope')->assertStatus(404);
         $this->get('/docs/main/_assets/docs/images/none.png')->assertStatus(404);
@@ -93,12 +93,12 @@ final class ControllerInternalsTest extends TestCase
     #[DataProvider('queries')]
     public function test_the_query_of_a_search_is_trimmed_and_cut_to_a_hundred_letters(string $encoded, string $query): void
     {
-        $this->getJson('/docs/main/search?q='.$encoded)->assertOk()->assertJsonPath('query', $query);
+        $this->getJson('/docs/main/_search?q='.$encoded)->assertOk()->assertJsonPath('query', $query);
     }
 
     public function test_the_controller_trims_the_query_itself_when_no_middleware_does(): void
     {
-        $request = Request::create('/docs/main/search', 'GET', ['q' => "  \t".str_repeat('a', 100)], server: ['HTTP_ACCEPT' => 'application/json']);
+        $request = Request::create('/docs/main/_search', 'GET', ['q' => "  \t".str_repeat('a', 100)], server: ['HTTP_ACCEPT' => 'application/json']);
 
         $response = $this->app->make(DocsController::class)->search($request, 'main');
 
@@ -106,9 +106,17 @@ final class ControllerInternalsTest extends TestCase
         $this->assertSame(str_repeat('a', 100), $response->getData(true)['query']);
     }
 
+    public function test_a_guide_called_search_opens_and_the_search_has_an_address_of_its_own(): void
+    {
+        $this->docsOf(['docs/search.md' => "# Search module\n\nThe results page and the admin search box."]);
+
+        $this->get('/docs/main/search')->assertOk()->assertSee('The results page and the admin search box.')->assertDontSee('name="robots" content="noindex"', false);
+        $this->getJson('/docs/main/_search?q=admin')->assertOk()->assertJsonPath('results.0.page', 'search');
+    }
+
     public function test_a_search_without_a_query_has_no_results(): void
     {
-        $this->getJson('/docs/main/search')->assertOk()->assertExactJson(['query' => '', 'results' => []]);
+        $this->getJson('/docs/main/_search')->assertOk()->assertExactJson(['query' => '', 'results' => []]);
     }
 
     public function test_the_language_switch_of_a_search_keeps_the_query(): void
@@ -116,13 +124,13 @@ final class ControllerInternalsTest extends TestCase
         $this->languages();
         $root = $this->root();
 
-        $this->get('/docs/main/search?q=two%20words')->assertOk()
-            ->assertSee('href="'.$root.'/ru/docs/main/search?q=two%20words"', false)
-            ->assertSee('href="'.$root.'/de/docs/main/search?q=two%20words"', false)
+        $this->get('/docs/main/_search?q=two%20words')->assertOk()
+            ->assertSee('href="'.$root.'/ru/docs/main/_search?q=two%20words"', false)
+            ->assertSee('href="'.$root.'/de/docs/main/_search?q=two%20words"', false)
             ->assertSee('name="robots" content="noindex"', false);
-        $this->get('/docs/main/search')->assertOk()
-            ->assertSee('href="'.$root.'/ru/docs/main/search"', false)
-            ->assertDontSee('/docs/main/search?q=', false);
+        $this->get('/docs/main/_search')->assertOk()
+            ->assertSee('href="'.$root.'/ru/docs/main/_search"', false)
+            ->assertDontSee('/docs/main/_search?q=', false);
     }
 
     public function test_a_picture_of_a_release_may_be_kept_for_a_year_and_a_picture_of_a_branch_for_an_hour(): void

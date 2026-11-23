@@ -60,7 +60,7 @@ Old versions say they are old and point their `canonical` to the same page of th
 
 ## Search
 
-`/docs/main/search?q=field` lists the sections that contain every word of the query, the ones with the words in their heading first. The same address answers JSON to `Accept: application/json`, which is what the box in the sidebar uses for its suggestions. The index is built from the rendered pages and cached until a file changes.
+`/docs/main/_search?q=field` lists the sections that contain every word of the query, the ones with the words in their heading first. The same address answers JSON to `Accept: application/json`, which is what the box in the sidebar uses for its suggestions. The index is built from the rendered pages and cached until a file changes.
 
 ## The look
 

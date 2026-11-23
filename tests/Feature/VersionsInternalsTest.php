@@ -119,7 +119,7 @@ final class VersionsInternalsTest extends TestCase
         $this->assertSame('guide', $docs->page($version, '/guide/')?->slug);
         $this->assertSame($docs->url($version, 'guide', 'en'), $docs->url($version, '/guide/', 'en'));
         $this->assertSame($this->root().'/docs/main/guide', $docs->url($version, '/guide/', 'en'));
-        $this->assertSame($this->root().'/docs/main/search', $docs->searchUrl($version, 'en'));
+        $this->assertSame($this->root().'/docs/main/_search', $docs->searchUrl($version, 'en'));
     }
 
     public function test_the_pages_are_the_start_page_the_guides_in_the_configured_order_the_changelog_and_the_modules(): void
