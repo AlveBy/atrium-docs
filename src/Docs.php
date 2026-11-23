@@ -159,7 +159,7 @@ final class Docs
     {
         $fenced = false;
 
-        foreach (preg_split('/\R/', $markdown) ?: [] as $line) {
+        foreach (preg_split('/\r\n|\r|\n/', $markdown) ?: [] as $line) {
             if (preg_match('/^ {0,3}(```|~~~)/', $line)) {
                 $fenced = ! $fenced;
 

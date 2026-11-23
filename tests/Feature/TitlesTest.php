@@ -24,6 +24,14 @@ final class TitlesTest extends TestCase
         $this->assertNull(Docs::heading("## Only a section\n\nText."));
     }
 
+    public function test_a_cyrillic_title_is_not_cut_in_the_middle_of_a_letter(): void
+    {
+        // The second byte of "х" (D1 85) is NEL to a byte-wise \R.
+        $this->assertSame('Двухфакторный вход', Docs::heading("# Двухфакторный вход\n\nТекст."));
+        $this->assertSame('Вход через соцсети', Docs::heading("Вступление\r\n# Вход через соцсети\r\n"));
+        $this->assertSame('Title', Docs::heading("Intro\r# Title\r"));
+    }
+
     public function test_titles_read_from_the_files_match_the_rendered_ones(): void
     {
         $docs = $this->app->make(Docs::class);
