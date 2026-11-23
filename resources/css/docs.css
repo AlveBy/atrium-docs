@@ -85,6 +85,8 @@
 .docs-table table { border-collapse: collapse; min-width: 100%; font-size: .95rem; }
 .docs-table th, .docs-table td { padding: .5rem .75rem; border: 1px solid var(--docs-line); text-align: left; vertical-align: top; }
 .docs-table th { background: var(--docs-surface); }
+/* Code in a table stays whole: the table scrolls sideways instead of breaking a name letter by letter. */
+.docs-table :not(pre) > code { overflow-wrap: normal; white-space: nowrap; }
 
 /* Phiki: the dark colours of each token sit in --phiki-dark-* variables. */
 :root[data-theme="dark"] .docs .phiki,

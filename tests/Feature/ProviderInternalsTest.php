@@ -96,6 +96,15 @@ final class ProviderInternalsTest extends TestCase
         $this->assertStringContainsString('.docs-body', DocsServiceProvider::styles());
     }
 
+    public function test_code_in_a_table_stays_whole_and_the_table_scrolls_while_code_in_the_text_may_wrap(): void
+    {
+        $styles = DocsServiceProvider::styles();
+
+        $this->assertStringContainsString('.docs-table { overflow-x: auto;', $styles);
+        $this->assertStringContainsString('.docs-table :not(pre) > code { overflow-wrap: normal; white-space: nowrap; }', $styles);
+        $this->assertStringContainsString('.docs-content :not(pre) > code { padding: .1em .35em; border-radius: .3em; background: var(--docs-surface); font-size: .9em; overflow-wrap: anywhere; }', $styles);
+    }
+
     public function test_a_page_wants_a_version_of_plain_characters_and_a_path_of_slugs(): void
     {
         $route = Route::getRoutes()->getByName('atrium.docs.show');
